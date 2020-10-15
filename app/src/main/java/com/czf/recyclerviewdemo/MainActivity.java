@@ -2,15 +2,17 @@ package com.czf.recyclerviewdemo;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.dnwalter.formlayoutmanager.adapter.BaseFormAdapter;
+import com.dnwalter.formlayoutmanager.layoutmanager.FormLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,20 +27,18 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView = findViewById(R.id.recycler_view);
 
     List<String> list = new ArrayList<>(100);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10000; i++) {
       list.add("list data: " + i);
     }
 
-    recyclerView.setAdapter(new MyAdapter(list));
-    recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+    recyclerView.setAdapter(new MyAdapter(this, list));
+    recyclerView.setLayoutManager(new FormLayoutManager(100, recyclerView));
   }
 
-  public static class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
+  public static class MyAdapter extends BaseFormAdapter<String> {
 
-    private List<String> data;
-
-    public MyAdapter(List<String> data) {
-      this.data = data;
+    public MyAdapter(Context context, List<String> data) {
+      super(context, data);
     }
 
     @Override
@@ -48,24 +48,34 @@ public class MainActivity extends AppCompatActivity {
 
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-      TextView tv = new TextView(parent.getContext());
-      return new MyViewHolder(tv);
+    public RecyclerView.ViewHolder createViewHolder(@NonNull View view, int viewType) {
+      return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
       TextView tv = (TextView)holder.itemView;
       float density = tv.getResources().getDisplayMetrics().density;
       tv.setHeight(Math.round(50 * density));
       tv.setPadding(Math.round(10 * density), 0, Math.round(10 * density), 0);
       tv.setGravity(Gravity.CENTER);
-      ((TextView)holder.itemView).setText(this.data.get(position));
+      ((TextView)holder.itemView).setText(this.mList.get(position));
     }
 
     @Override
-    public int getItemCount() {
-      return data.size();
+    public int getRowCount() {
+      return 100;
+    }
+
+    @Override
+    public int getColumnCount() {
+      return 100;
+    }
+
+    @Override
+    protected View createView(ViewGroup viewGroup, int viewType) {
+      TextView tv = new TextView(viewGroup.getContext());
+      return tv;
     }
   }
 
