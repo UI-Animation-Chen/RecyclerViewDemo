@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:background="@drawable/bg_bounds"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/item_text"
         android:layout_width="80dp"
         android:layout_height="40dp"
         android:text="item"
-        android:gravity="center"
-        android:background="@drawable/bg_bounds"/>
-</FrameLayout>
+        android:gravity="center"/>
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"/>
+</LinearLayout>

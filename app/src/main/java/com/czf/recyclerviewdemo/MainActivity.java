@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -30,7 +31,14 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(new MTTableView(this.getApplicationContext()));
     setContentView(R.layout.activity_main);
-    RecyclerView recyclerView = findViewById(R.id.recycler_view);
+
+    FrameLayout container = findViewById(R.id.container);
+    RecyclerView recyclerView =
+            (RecyclerView) LayoutInflater
+                    .from(getApplicationContext())
+                    .inflate(R.layout.androidx_recyclerview, null, false);
+    container.addView(recyclerView);
+    recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
     List<List<String>> list = new ArrayList<>(100);
     for (int row = 0; row < 100; row++) {
@@ -43,16 +51,19 @@ public class MainActivity extends AppCompatActivity {
 
     MyAdapter adapter = new MyAdapter(this, list);
     recyclerView.setAdapter(adapter);
-    recyclerView.setLayoutManager(new FormLayoutManager(adapter.getColumnCount(), recyclerView));
+    recyclerView.setLayoutManager(new FixedGridLayoutManager(adapter.getColumnCount()));
     RecyclerView.RecycledViewPool pool = new RecyclerView.RecycledViewPool();
-    pool.setMaxRecycledViews(0, 100);
+    pool.setMaxRecycledViews(0, 50);
     recyclerView.setRecycledViewPool(pool);
   }
 
-  public static class MyAdapter extends BaseFormAdapter<List<String>> {
+  public static class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
+
+    private int count;
+    private List<List<String>> mList;
 
     public MyAdapter(Context context, List<List<String>> data) {
-      super(context, data);
+      mList = data;
     }
 
     @Override
@@ -62,32 +73,39 @@ public class MainActivity extends AppCompatActivity {
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder createViewHolder(@NonNull View view, int viewType) {
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+      View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_item, null);
       return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
       int column = getColumnCount();
-      String str = mList.get(position / column).get(position % column);
-      ((MyViewHolder)holder).text.setText(str);
+      final String str = mList.get(position / column).get(position % column);
+      final TextView tv = ((MyViewHolder)holder).text;
+      tv.setText(str);
+      tv.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          count++;
+          tv.setText(str + count);
+          notifyDataSetChanged();
+        }
+      });
       Log.d("--==--", "bindVH: " + position);
     }
 
     @Override
+    public int getItemCount() {
+      return getRowCount() * getColumnCount();
+    }
+
     public int getRowCount() {
       return mList != null ? mList.size() : 0;
     }
 
-    @Override
     public int getColumnCount() {
       return (mList != null && mList.size() > 0) ? mList.get(0).size() : 0;
-    }
-
-    @Override
-    protected View createView(ViewGroup viewGroup, int viewType) {
-      Log.d("--==--", "createView");
-      return LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.layout_item, null);
     }
   }
 
